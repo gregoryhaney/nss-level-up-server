@@ -5,7 +5,7 @@
             "name": "Python: Django",
             "type": "python",
             "request": "launch",
-            "program": "${levelup-server}/manage.py",
+            "program": "${workspaceFolder}/manage.py",
             "args": ["runserver"],
             "django": true,
             "autoReload":{
