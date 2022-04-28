@@ -3,7 +3,7 @@
         "model": "levelupapi.game",
         "pk": 1,
         "fields": {
-            "game_type": 1,
+            "game_type": 3,
             "title": "Donkey Kong",
             "maker": "Sega",
             "gamer": 1,
@@ -15,11 +15,25 @@
         "model": "levelupapi.game",
         "pk": 2,
         "fields": {
-            "game_type": 1,
-            "title": "Konami",
+            "game_type": 3,
+            "title": "Pac Man",
+            "maker": "Konami",
             "gamer": 1,
             "number_of_players": 1,
             "skill_level": 6
         }
+    },
+    {
+        "model": "levelupapi.game",
+        "pk": 2,
+        "fields": {
+            "game_type": 1,
+            "title": "Monopoly",
+            "maker": "Parker Brothers",
+            "gamer": 1,
+            "number_of_players": 4,
+            "skill_level": 3
+        }
     }
 ]
+
