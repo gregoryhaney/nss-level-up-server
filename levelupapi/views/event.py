@@ -4,7 +4,7 @@ from django.http import HttpResponseServerError
 from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
 from rest_framework import serializers, status
-from levelupapi.models import Event
+from levelupapi.models import Event, Game, Gamer
 
 
 class EventView(ViewSet):
@@ -86,6 +86,58 @@ class EventView(ViewSet):
                 # above, the ORM method "all" is equivalent to the following SQL code:
                     # SELECT *
                     # FROM levelupapi_event
+
+
+    def create(self, request):
+        """Handle the POST operations
+        
+            Returns
+                Response -- JSON serialized event instance        
+        """
+            # the first line below gets the user (gamer) that is logged in.
+            # use the 'request.auth.user' to get the 'organizer' object based on user
+                # the equivalent in SQL:
+                    #   db_cursor.execute("""
+                    #       SELECT *
+                    #       FROM levelupapi_gamer
+                    #       WHERE user = ?
+                    #       """, (user,)
+                    #   )
+        gamer = Gamer.objects.get(user=request.auth.user)
+        
+            # Retrieve the 'Game' object from DB to make sure the game
+            # the user is trying to add for a new event (create) actually exists in the DB.
+            # Data passed in from client is held in 'request.data' dictionary.
+                # keys used on the 'request.data' must match what client is passing to server
+        
+        game = Game.objects.get(pk=request.data["game_id"])
+        
+            # create() ORM method is called to add the event to DB. 
+            # fields are passed to FN as parameters
+                # SQL equivalent is:
+                    #   db_cursor.execute("""
+                    #   INSERT INTO levelupapi_event
+                    #   (description, date, time, game_id, organizer_id)
+                    #   VALUES (?, ?, ?, ?, ?)
+                    #   """, (request.data["description"], request.data["date"],
+                    #   request.data["time"], game, gamer)) ) 
+        
+        event = Event.objects.create(
+            description=request.data["description"],
+            date=request.data["date"],
+            time=request.data["time"],
+            game=game,
+            organizer=gamer
+        )
+                # Once 'create' has finished, the 'event' variable is now the new
+                # 'event' instance, including the new 'id'. The object can be 
+                # serialized and returned to the client, just like in 'retrieve' above.        
+        
+        serializer = EventSerializer(event)
+        return Response(serializer.data)  
+     
+
+
                     
 class EventSerializer(serializers.ModelSerializer):
         # the Serializer class determines how the Python data should be serialized

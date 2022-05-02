@@ -3,8 +3,9 @@ from django.http import HttpResponseServerError
 from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
 from rest_framework import serializers, status
-from levelupapi.models import Game
-from levelupapi.views import GameTypeView
+from levelupapi.models import Game, Gamer, GameType
+from levelupapi.views import GameTypeView, game_type
+
 
 
 class GameView(ViewSet):
@@ -85,6 +86,59 @@ class GameView(ViewSet):
                 # above, the ORM method "all" is equivalent to the following SQL code:
                     # SELECT *
                     # FROM levelupapi_game
+     
+    def create(self, request):
+        """Handle the POST operations
+        
+            Returns
+                Response -- JSON serialized game instance        
+        """
+            # the first line below gets the user (gamer) that is logged in.
+            # use the 'request.auth.user' to get the 'gamer' object based on user
+                # the equivalent in SQL:
+                    #   db_cursor.execute("""
+                    #       SELECT *
+                    #       FROM levelupapi_gamer
+                    #       WHERE user = ?
+                    #       """, (user,)
+                    #   )
+        gamer = Gamer.objects.get(user=request.auth.user)
+        
+            # retrieve the 'GameType' object from DB to make sure the game type
+            # the user is trying to add for new game (create) actually exists in the DB.
+            # data passed in from client is held in 'request.data' dictionary.
+                # keys used on the 'request.data' must match what client is passing to server
+        
+        game_type = GameType.objects.get(pk=request.data["game_type_id"])
+        
+            # create() ORM method is called to add the game to DB. 
+            # fields are passed to FN as parameters
+                # SQL equivalent is:
+                    #   db_cursor.execute("""
+                    #   INSERT INTO levelupapi_game
+                    #   (title, maker, number_of_players, skill_level,
+                    #   gamer_id, game_type_id) VALUES (?, ?, ?, ?, ?, ?)
+                    #   """, (request.data["title"], request.data["maker"],
+                    #   request.data["numberOfPlayers"], request.data["skillLevel"], 
+                    #   gamer, game_type)) )
+        
+        game = Game.objects.create(
+            title=request.data["title"],
+            maker=request.data["maker"],
+            number_of_players=request.data["number_of_players"],
+            skill_level=request.data["skill_level"],
+            gamer=gamer,
+            game_type=game_type
+        )
+                # Once 'create' has finished, the 'game' variable is now the new
+                # 'game' instance, including the new 'id'. The object can be 
+                # serialized and returned to the client, just like in 'retrieve' above.        
+        
+        serializer = GameSerializer(game)
+        return Response(serializer.data)
+         
+     
+     
                     
 class GameSerializer(serializers.ModelSerializer):
         # the Serializer class determines how the Python data should be serialized
@@ -108,4 +162,54 @@ class GameSerializer(serializers.ModelSerializer):
             # IMPORTANT: if doing this, omit the "_id" for the particular field, otherwise it
             # will only return the id and not the desired expansion data.
             # i.e.: WITHOUT [depth], use "game_type_id". WITH [depth], use "game_type"
+
+
+
+
+# ================================================================================
+# This option was NOT implemented, but the code is here for reference
+# It consists of a new CREATE method and a new SERIALIZER.
+    # The new serializer is used to validate and save the game in the CREATE
+    # method
+    # Instead of making a new instance of the 'Game' model, the 'request.data'
+    # dictionary is passed to the new serializer as the data. The keys on the
+    # dictionary must match what is in the fields of the serializer. After creating
+    # the serializer instance, call 'is_valid' to ensure client sent valid data. If the
+    # code passes validation, the 'Save' method will add the game to the DB and add
+    # an 'id' to the serializer.
+
+# ================= PART I: NEW CREATE METHOD ==============================
+
+# add this line at the top with the other imports
+# from django.core.exceptions import ValidationError
+
+# # this will replace the previous create method
+# def create(self, request):
+#     """Handle POST operations
+
+#     Returns:
+#         Response -- JSON serialized game instance
+#     """
+#     gamer = Gamer.objects.get(user=request.auth.user)
+#     serializer = CreateGameSerializer(data=request.data)
+#     serializer.is_valid(raise_exception=True)
+#     serializer.save(gamer=gamer)
+#     return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+# ========== PART II: NEW SERIALIZER  ======================================        
+# class CreateGameSerializer(serializers.ModelSerializer):
+#      # the Serializer class determines how the Python data should be serialized
+#         # to be sent back to the client.
+#     # This is a new Serializer class that is being used to do input validation
+#     # It includes ONLY the fields expected from the client.
+#         # So, no "gamer" field, since that comes from the Auth header and NOT the body
+#     """JSON serializer for game to validate/save the new game in the Create method
+#     """
+#     class Meta:
+#         model = Game
+#         fields = ('id', 'title', 'maker', 'number_of_players',
+#                   'skill_level', 'game_type')
+        
+        
+# ==================================================================
                 
