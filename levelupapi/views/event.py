@@ -149,6 +149,19 @@ class EventView(ViewSet):
         return Response(None, status=status.HTTP_204_NO_CONTENT)   
     
     
+    
+    
+    # Similar to above with "retrieve" and "update" methods, this method
+    # "destroy" takes the PK as an argument. The PK is used to get the
+    # single object, then calls the "DELETE" from the ORM to remove it from DB.
+    # The response back to client is HTTP 204.       
+           
+    def destroy(self, request, pk):
+        event = Event.objects.get(pk=pk)
+        event.delete()
+        return Response(None, status=status.HTTP_204_NO_CONTENT)
+    
+    
                     
 class EventSerializer(serializers.ModelSerializer):
         # the Serializer class determines how the Python data should be serialized
