@@ -136,9 +136,25 @@ class GameView(ViewSet):
         
         serializer = GameSerializer(game)
         return Response(serializer.data)
+        
+        
          
-     
-     
+     # the HTTP PUT request expects the entire object to be sent to the
+     # server, regardless of which field(s) is/are being updated. This 
+     # UPDATE method is used to handle the PUT requests for a game.
+    def update(self, request, pk):
+        """Handle PUT requests for a game
+
+        Returns:
+            Response -- Empty body with 204 status code
+        """
+        game = Game.objects.get(pk=pk)
+        serializer = CreateGameSerializer(game, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(None, status=status.HTTP_204_NO_CONTENT)   
+    
+           
                     
 class GameSerializer(serializers.ModelSerializer):
         # the Serializer class determines how the Python data should be serialized
@@ -163,6 +179,18 @@ class GameSerializer(serializers.ModelSerializer):
             # will only return the id and not the desired expansion data.
             # i.e.: WITHOUT [depth], use "game_type_id". WITH [depth], use "game_type"
 
+class CreateGameSerializer(serializers.ModelSerializer):
+     # the Serializer class determines how the Python data should be serialized
+        # to be sent back to the client.
+    # This is a new Serializer class that is being used to do input validation
+    # It includes ONLY the fields expected from the client.
+        # So, no "gamer" field, since that comes from the Auth header and NOT the body
+    """JSON serializer for game to validate/save the new game in the Create method
+    """
+    class Meta:
+        model = Game
+        fields = ('id', 'title', 'maker', 'number_of_players',
+                  'skill_level', 'game_type')
 
 
 
@@ -212,4 +240,35 @@ class GameSerializer(serializers.ModelSerializer):
         
         
 # ==================================================================
-                
+     
+     
+     
+# ====================================================================
+
+# == ORIGINAL UPDATE METHOD ============
+# def update(self, request, pk):
+#         """Handle the PUT requests for a game
+        
+#             RETURNs: 
+#                 Response -- Empty body with 204 status code
+#         """
+#             # just like in the RETRIEVE method above, we get the Game
+#             # object we want from the DB (1st line below). The next
+#             # several lines set up the fields on Game to the incoming values
+#             # from the client (just like the CREATE method above).
+#             # Once all fields are set, changes are SAVEd to the DB.
+#                 # this UPDATE method will be called when a PUT request is
+#                 # made to [ http://localhost:8000/games/<game_id>]
+        
+#         game = Game.objects.get(pk=pk)
+#         game.title = request.data["title"]
+#         game.maker = request.data["maker"]
+#         game.number_of_players = request.data["number_of_players"]
+#         game.skill_level = request.data["skill_level"]
+
+#         game_type = GameType.objects.get(pk=request.data["game_type"])
+#         game.game_type = game_type
+#         game.save()
+
+#         return Response(None, status=status.HTTP_204_NO_CONTENT)         
+                      

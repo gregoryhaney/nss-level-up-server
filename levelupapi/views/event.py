@@ -135,9 +135,20 @@ class EventView(ViewSet):
         
         serializer = EventSerializer(event)
         return Response(serializer.data)  
-     
+    
+    def update(self, request, pk):
+        """Handle PUT requests for an event
 
-
+        Returns:
+            Response -- Empty body with 204 status code
+        """
+        event = Event.objects.get(pk=pk)
+        serializer = CreateEventSerializer(event, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(None, status=status.HTTP_204_NO_CONTENT)   
+    
+    
                     
 class EventSerializer(serializers.ModelSerializer):
         # the Serializer class determines how the Python data should be serialized
@@ -151,4 +162,48 @@ class EventSerializer(serializers.ModelSerializer):
                 # above, the Meta class holds the configuration for the serializer.
                 # it tells serializer to use "Event" model and to include
                 # the listed fields
-                
+    
+class CreateEventSerializer(serializers.ModelSerializer):
+     # the Serializer class determines how the Python data should be serialized
+        # to be sent back to the client.
+    # This is a new Serializer class that is being used to do input validation
+    # It includes ONLY the fields expected from the client.
+        # So, no "organizer" field, since that comes from the Auth header and NOT the body
+    """JSON serializer for game to validate/save the new game in the Create method
+    """
+    class Meta:
+        model = Event
+        fields = ('id', 'description', 'date', 'time', 'game_id')               
+   
+    
+    
+  # ===========================================================
+  # ======= ORIGINAL UPDATE METHOD (before adding validation) 
+  
+#   def update(self, request, pk):
+#         """Handle the PUT requests for an event
+        
+#             RETURNs: 
+#                 Response -- Empty body with 204 status code
+#         """
+#             # just like in the RETRIEVE method above, we get the Event
+#             # object we want from the DB (1st line below). The next
+#             # several lines set up the fields on Event to the incoming values
+#             # from the client (just like the CREATE method above).
+#             # Once all fields are set, changes are SAVEd to the DB.
+#                 # this UPDATE method will be called when a PUT request is
+#                 # made to [ http://localhost:8000/events/<event_id>]
+        
+#         event = Event.objects.get(pk=pk)
+#         event.description = request.data["description"]
+#         event.date = request.data["date"]
+#         event.time = request.data["time"]
+#         event.game_id = request.data["game_id"]
+    
+#         gamer = Gamer.objects.get(user=request.auth.user)
+#         event.organizer_id = gamer
+       
+#         event.save()
+
+#         return Response(None, status=status.HTTP_204_NO_CONTENT)         
+               
