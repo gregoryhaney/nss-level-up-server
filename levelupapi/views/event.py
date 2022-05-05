@@ -1,15 +1,64 @@
 """View module for handling requests about game types"""
 from asyncio import events
+from urllib import request
 from django.http import HttpResponseServerError
 from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
 from rest_framework import serializers, status
 from levelupapi.models import Event, Game, Gamer
-
+from rest_framework.decorators import action
 
 class EventView(ViewSet):
-    """Level up events view"""
+    """Level Up events view"""
 
+        # @action is a 'decorator', which allows us to create a custom
+        # action that the API will support. In this case, we want the client
+        # to make a request to allow a gamer to sign up for an event.
+        # @action requires above: "from rest_framework.decorators import action"
+        # in @action, specify the supported HTTP method(s), e.g.: post, delete, etc.
+        # "detail=True" means the URL will include the PK.
+        # the route is named after the FN, so to call this method, the
+        # URL would look like: [ http://localhost:8000/events/2/signup ]
+
+    @action(methods=['post'], detail=True)
+    def signup(self, request, pk):
+            """POST request for a User to sign up for an Event"""
+
+            gamer = Gamer.objects.get(user=request.auth.user)
+            event = Event.objects.get(pk=pk)
+            event.attendees.add(gamer)
+            return Response({'message': 'Gamer added'}, status=status.HTTP_201_CREATED)
+
+                # ABOVE: just like with the "create" method below, we get the
+                # Gamer that is logged in and the Event by its PK. The
+                # 'ManyToManyField' - attendees - on the 'Event' model handles
+                # the heavy lifting.
+                # The 'add' method on 'attendees' creates the relationship btwn 
+                # this Event and Gamer by adding "event_id" && "gamer_id" to
+                # the join table. It returns an HTTP 201 response to the client.
+
+    @action(methods=['delete'], detail=True)
+    def leave(self, request, pk):
+            """DELETE request for a User to leave an Event"""
+            gamer = Gamer.objects.get(user=request.auth.user)
+            event = Event.objects.get(pk=pk)
+            event.attendees.remove(gamer)
+            return Response({'message': 'Gamer removed'}, status=status.HTTP_204_NO_CONTENT)
+    
+    
+    @property
+    def joined(self):
+            return self.__joined
+        
+    @joined.setter
+    def joined(self, value):
+            self.__joined = value
+    
+    
+    
+    
+    
+    
     def retrieve(self, request, pk):
         # this 'retrieve' method will get a single object from the DB based on
         # the PK in the URL. 
@@ -52,7 +101,7 @@ class EventView(ViewSet):
         """
         events = Event.objects.all()                         # ORM method "all"
         
-        
+        gamer = Gamer.objects.get(user=request.auth.user)
         # the following three lines allow for passing in a query string parameter via URL.
             # before sending the 'events' list to the serializer, we can check if a query
             # string was passed.
@@ -73,8 +122,16 @@ class EventView(ViewSet):
                 #       FROM levelupapi_event
                 #       WHERE event_id = ?
                 #   """", (game_id,)
-                #   )   
-        
+                #   )  
+                
+                # set the 'joined' property on every event 
+        for event in events:
+                # check if gamer is in the attendees list on the event
+            event.joined = gamer in event.attendees.all()
+                    # ABOVE: the 'all' method gets every gamer attending the event.
+                    # 'gamer in event...' evals to True or False depending on
+                    # whether gamer is in attendees list
+            
          
         serializer = EventSerializer(events, many=True)
         return Response(serializer.data)
@@ -170,7 +227,8 @@ class EventSerializer(serializers.ModelSerializer):
     """
     class Meta:
         model = Event
-        fields = ('id', 'description', 'date', 'time', 'game_id', 'organizer_id')                  
+        fields = ('id', 'game', 'organizer',
+                  'description', 'date', 'time', 'attendees', 'joined')                  
         
                 # above, the Meta class holds the configuration for the serializer.
                 # it tells serializer to use "Event" model and to include

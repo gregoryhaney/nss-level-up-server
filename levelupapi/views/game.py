@@ -193,7 +193,7 @@ class CreateGameSerializer(serializers.ModelSerializer):
         # to be sent back to the client.
     # This is a new Serializer class that is being used to do input validation
     # It includes ONLY the fields expected from the client.
-        # So, no "gamer" field, since that comes from the Auth header and NOT the body
+        # So, no "gamer" field, since it comes from the Auth header, NOT from the body
     """JSON serializer for game to validate/save the new game in the Create method
     """
     class Meta:
