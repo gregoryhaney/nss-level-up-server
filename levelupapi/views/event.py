@@ -228,7 +228,7 @@ class EventSerializer(serializers.ModelSerializer):
     class Meta:
         model = Event
         fields = ('id', 'game', 'organizer',
-                  'description', 'date', 'time', 'attendees', 'joined')                  
+                  'description', 'date', 'time', 'attendees')                  
         
                 # above, the Meta class holds the configuration for the serializer.
                 # it tells serializer to use "Event" model and to include
@@ -245,7 +245,7 @@ class CreateEventSerializer(serializers.ModelSerializer):
     class Meta:
         model = Event
         fields = ('id', 'description', 'date', 'time', 'game_id')               
-   
+        
     
     
   # ===========================================================
