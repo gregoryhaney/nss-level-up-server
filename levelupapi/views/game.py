@@ -135,7 +135,7 @@ class GameView(ViewSet):
                 # serialized and returned to the client, just like in 'retrieve' above.        
         
         serializer = GameSerializer(game)
-        return Response(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
         
         
          
@@ -193,14 +193,14 @@ class CreateGameSerializer(serializers.ModelSerializer):
         # to be sent back to the client.
     # This is a new Serializer class that is being used to do input validation
     # It includes ONLY the fields expected from the client.
-        # So, no "gamer" field, since it comes from the Auth header, NOT from the body
+        # So, no "gamer" field, since that comes from the Auth header, NOT from the body
     """JSON serializer for game to validate/save the new game in the Create method
     """
     class Meta:
         model = Game
         fields = ('id', 'title', 'maker', 'number_of_players',
                   'skill_level', 'game_type')
-
+                    
 
 
 # ================================================================================
