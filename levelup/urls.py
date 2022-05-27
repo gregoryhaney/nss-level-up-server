@@ -39,6 +39,7 @@ urlpatterns = [
     path('login', login_user),
     path('admin/', admin.site.urls),
     path('', include(router.urls)),
+    path('', include('levelupreports.urls')),
 ]
 
     # Requests to http://localhost:8000/register are routed to "register_user" FN
