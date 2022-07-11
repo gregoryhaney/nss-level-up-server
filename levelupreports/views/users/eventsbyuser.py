@@ -35,15 +35,15 @@ class UserEventList(View):
                 
                     
                 
-            # Pass the db_cursor to the dict_fetch_all function to turn the 
+            # Pass the db_cursor to the dict_fetch_all function to turn the
             #   fetch_all() response into a dictionary
             dataset = dict_fetch_all(db_cursor)
 
-            # Take the flat data from the dataset, and build the
+            # Take the flat data from the dataset and build the
             # following data structure for each gamer.
             # This will be the structure of the events_by_user list:
                        
-            ###  NEW DATA STRUCTURE FOR EVENTS           
+            ###  NEW DATA STRUCTURE FOR EVENTS
             
             # [
             #     {
@@ -60,17 +60,13 @@ class UserEventList(View):
             #     }
             # ]
             
-            
-            
-            
-            
-            
+           
 
             events_by_user = [ ]
 
             for row in dataset:
-                # TODO: Create a dictionary called event that includes 
-                # the gamer name, event description, game title, date, time,
+                # TODO: Create a dictionary called "event" that includes: 
+                # gamer name, event description, game title, date, time
                 # from the row dictionary
                 event = {
                     "id": row['ID'],
@@ -81,7 +77,7 @@ class UserEventList(View):
                     "id": row['GamerId']
                 }
                 
-                # See if the gamer has been added to the games_by_user list already
+                # See if the gamer has been added to the "games_by_user" list already
                 user_dict = None
                 for user_event in events_by_user:
                      if user_event['gamer_id'] == row['GamerId']:
@@ -90,7 +86,7 @@ class UserEventList(View):
                 
                 if user_dict:
                     # If the user_dict is already in the games_by_user list, 
-                    # append the game to the games list
+                    # append the game to the "games" list
                     user_dict['events'].append(event)
                 else:
                     # If the user is not on the games_by_user list, 

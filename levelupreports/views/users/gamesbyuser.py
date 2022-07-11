@@ -37,7 +37,7 @@ class UserGameList(View):
 
             # Take the flat data from the dataset, and build the
             # following data structure for each gamer.
-            # This will be the structure of the games_by_user list:
+            # This will be the structure of the "games_by_user" list:
             #
             # [
             #   {
@@ -67,8 +67,8 @@ class UserGameList(View):
             games_by_user = [ ]
 
             for row in dataset:
-                # TODO: Create a dictionary called game that includes 
-                # the name, description, number_of_players, maker,
+                # TODO: Create a dictionary called "game" that includes: 
+                # name, description, number_of_players, maker,
                 # game_type_id, and skill_level from the row dictionary
                 game = {
                     "id": row['id'],
@@ -80,7 +80,7 @@ class UserGameList(View):
                     "id": row['GamerId']
                 }
                 
-                # See if the gamer has been added to the games_by_user list already
+                # See if the gamer has been added to the "games_by_user" list already
                 user_dict = None
                 for user_game in games_by_user:
                      if user_game['gamer_id'] == row['GamerId']:
@@ -88,11 +88,11 @@ class UserGameList(View):
                 
                 
                 if user_dict:
-                    # If the user_dict is already in the games_by_user list, 
-                    # append the game to the games list
+                    # If the user_dict is already in the "games_by_user" list, 
+                    # append the game to the "games" list
                     user_dict['games'].append(game)
                 else:
-                    # If the user is not on the games_by_user list, 
+                    # If the user is not on the "games_by_user" list, 
                     # create and add the user to the list
                     games_by_user.append({
                         "gamer_id": row['GamerId'],
